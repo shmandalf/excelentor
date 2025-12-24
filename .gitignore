@@ -1,0 +1,8 @@
+/vendor/
+.phpunit.result.cache
+.phpunit.cache/
+coverage/
+.DS_Store
+.idea/
+*.swp
+*.swo
