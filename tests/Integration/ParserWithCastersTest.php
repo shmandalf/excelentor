@@ -304,12 +304,5 @@ class ParserWithCastersTest extends TestCase
         $this->assertCount(2, $entities);
         $this->assertInstanceOf(ProductImportTestDTO::class, $entities[0]);
         $this->assertInstanceOf(ProductImportTestDTO::class, $entities[1]);
-
-        // Не пытаемся итерировать после toArray()
-        // $count = 0;
-        // foreach ($result as $entity) {
-        //     $count++;
-        // }
-        // $this->assertEquals(0, $count, 'Iterator should be exhausted after toArray()');
     }
 }

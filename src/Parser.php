@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor;
 
-use Carbon\Carbon;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use Shmandalf\Excelentor\Attributes\{Column, Header, NoHeader};
-use Shmandalf\Excelentor\Casters\BoolCaster;
-use Shmandalf\Excelentor\Casters\DateCaster;
-use Shmandalf\Excelentor\Casters\FloatCaster;
-use Shmandalf\Excelentor\Casters\IntCaster;
-use Shmandalf\Excelentor\Casters\StringCaster;
-use Shmandalf\Excelentor\Contracts\{CasterInterface, ParserInterface};
+use Shmandalf\Excelentor\Contracts\ParserInterface;
 use Shmandalf\Excelentor\Exceptions\{CastException, ParserException, ValidationException};
 
 class Parser implements ParserInterface
 {
+    use CasterConfigurationTrait;
+
     /**
      * Data caster registry
      *
@@ -97,9 +93,9 @@ class Parser implements ParserInterface
         $this->mappedClass = $mappedClass;
         $this->validatorFactory = $validatorFactory;
 
-        $reflectionClass = new ReflectionClass($mappedClass);
+        $this->registerDefaultCasters();
 
-        $this->registerCasters();
+        $reflectionClass = new ReflectionClass($mappedClass);
         $this->assembleHeader($reflectionClass);
         $this->assembleProperties($reflectionClass);
         $this->assembleValidation();
@@ -133,6 +129,29 @@ class Parser implements ParserInterface
      */
     public function parse(iterable $rows, ?callable $errorHandler = null): ParseResult
     {
+        // Check if we have any properties that need casting
+        $needsCasters = false;
+
+        foreach ($this->properties as $name => $property) {
+            $type = $property->getType()->getName();
+
+            if (!isset($this->casterRegistry[$type])) {
+                $needsCasters = true;
+                break;
+            }
+        }
+
+        if ($needsCasters) {
+            throw new \RuntimeException(
+                'No casters registered. Use withDefaultCasters() or withCast() methods ' .
+                    'to register casters for types: ' .
+                    implode(', ', array_unique(array_map(
+                        fn ($p) => $p->getType()->getName(),
+                        $this->properties
+                    )))
+            );
+        }
+
         return new ParseResult(
             processor: function () use ($rows) {
                 return $this->parseRows($rows);
@@ -238,29 +257,6 @@ class Parser implements ParserInterface
 
             yield $rowIndex => $row;
         }
-    }
-
-    /**
-     * Creates caster instances
-     *
-     */
-    private function registerCasters(): self
-    {
-        // Built-in type casters
-        $this->casterRegistry['int'] = new IntCaster();
-        $this->casterRegistry['integer'] = $this->casterRegistry['int'];
-        $this->casterRegistry['float'] = new FloatCaster();
-        $this->casterRegistry['double'] = $this->casterRegistry['float'];
-        $this->casterRegistry['bool'] = new BoolCaster();
-        $this->casterRegistry['boolean'] = $this->casterRegistry['bool'];
-        $this->casterRegistry['string'] = new StringCaster();
-
-        // Date/Time casters
-        $this->casterRegistry[Carbon::class] = new DateCaster();
-        $this->casterRegistry[\DateTime::class] = $this->casterRegistry[Carbon::class];
-        $this->casterRegistry[\DateTimeImmutable::class] = $this->casterRegistry[Carbon::class];
-
-        return $this;
     }
 
     /**
@@ -450,12 +446,11 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Casts a string value from spreadsheet to a specific type
-     *
+     * Updated casting method - throws if no caster found
      */
     private function castValueToPropType($value, string $type, ?string $format = null, string $propertyName = '', int $rowIndex = 0)
     {
-        // Null handling
+        // Null handling (оставляем как есть)
         if ($value === null) {
             if ($this->nullableProperties[$propertyName] ?? false) {
                 return null;
@@ -469,41 +464,38 @@ class Parser implements ParserInterface
             );
         }
 
-        // Find appropriate caster
-        if (isset($this->casterRegistry[$type])) {
-            try {
-                return $this->casterRegistry[$type]->cast($value, $format);
-            } catch (\InvalidArgumentException $e) {
-                throw CastException::conversionFailed(
-                    $propertyName,
-                    $type,
-                    $value,
-                    $e->getMessage(),
-                    $rowIndex
-                );
-            } catch (\Throwable $e) {
-                throw CastException::conversionFailed(
-                    $propertyName,
-                    $type,
-                    $value,
-                    sprintf('Unexpected error: %s', $e->getMessage()),
-                    $rowIndex
-                );
-            }
-        }
-
-        // Check built-in PHP types
-        if (in_array($type, ['int', 'integer', 'float', 'double', 'bool', 'boolean', 'string'], true)) {
+        // Find caster
+        if (!isset($this->casterRegistry[$type])) {
             throw CastException::unsupportedType(
                 $propertyName,
                 $type,
                 $value,
-                $rowIndex
+                $rowIndex,
+                'No caster registered for this type. Use withCast() method.'
             );
         }
 
-        // For class types without caster
-        return $value;
+        $caster = $this->casterRegistry[$type];
+
+        try {
+            return $caster->cast($value, $format);
+        } catch (\InvalidArgumentException $e) {
+            throw CastException::conversionFailed(
+                $propertyName,
+                $type,
+                $value,
+                $e->getMessage(),
+                $rowIndex
+            );
+        } catch (\Throwable $e) {
+            throw CastException::conversionFailed(
+                $propertyName,
+                $type,
+                $value,
+                sprintf('Unexpected error: %s', $e->getMessage()),
+                $rowIndex
+            );
+        }
     }
 
     /**
