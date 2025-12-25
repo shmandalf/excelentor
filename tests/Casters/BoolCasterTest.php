@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Tests\Casters;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Shmandalf\Excelentor\Casters\BoolCaster;
-use InvalidArgumentException;
 
 class BoolCasterTest extends TestCase
 {
@@ -122,7 +122,7 @@ class BoolCasterTest extends TestCase
     public function testConvertsViaStringCaster(): void
     {
         // Object with __toString()
-        $object = new class {
+        $object = new class () {
             public function __toString(): string
             {
                 return 'yes';
@@ -132,7 +132,7 @@ class BoolCasterTest extends TestCase
         $this->assertTrue($this->caster->cast($object));
 
         // Object with a numeric value
-        $numericObject = new class {
+        $numericObject = new class () {
             public function __toString(): string
             {
                 return '1';

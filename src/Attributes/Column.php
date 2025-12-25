@@ -12,21 +12,18 @@ class Column
     /**
      * Validation rule
      *
-     * @var string|null
      */
     private ?string $rule;
 
     /**
      * Custom messages about validation errors
      *
-     * @var array
      */
     private array $messages;
 
     /**
      * Column format
      *
-     * @var string|null
      */
     private ?string $format;
 
@@ -53,7 +50,6 @@ class Column
     }
 
     /**
-     * @return string|null
      */
     public function getRule(): ?string
     {
@@ -61,7 +57,6 @@ class Column
     }
 
     /**
-     * @return array
      */
     public function getMessages(): array
     {
@@ -77,7 +72,6 @@ class Column
     }
 
     /**
-     * @return string|null
      */
     public function getFormat(): ?string
     {

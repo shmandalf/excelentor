@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shmandalf\Excelentor\Contracts;
 
 use Shmandalf\Excelentor\Exceptions\ValidationException;
+use Shmandalf\Excelentor\ParseResult;
 
 interface ParserInterface
 {
@@ -13,17 +14,15 @@ interface ParserInterface
      *
      * Returns array with validation exceptions
      *
-     * @param iterable $rows
      * @return ValidationException[]
      */
     public function validateAll(iterable $rows): array;
 
     /**
-     * Parse data
+     * Parse rows with statistics and error handling
      *
-     * @param iterable $rows
-     * @return \Generator|object[] - resulting DTOs
-     * @throws ValidationException
+     * @param iterable $rows Input data
+     * @param callable|null $errorHandler Callback for error handling
      */
-    public function parse(iterable $rows): \Generator;
+    public function parse(iterable $rows, ?callable $errorHandler = null): ParseResult;
 }

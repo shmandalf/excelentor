@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Casters;
 
-use Shmandalf\Excelentor\Contracts\CasterInterface;
 use InvalidArgumentException;
+use Shmandalf\Excelentor\Contracts\CasterInterface;
 
 /**
  * 🔮 Float Transmutation Spell
@@ -90,8 +90,6 @@ class FloatCaster implements CasterInterface
     /**
      * Remove applying format from handleString
      *
-     * @param string $value
-     * @return float
      */
     private function handleString(string $value): float
     {
@@ -105,6 +103,7 @@ class FloatCaster implements CasterInterface
 
         // Check for special string representations
         $lower = strtolower($value);
+
         if ($lower === 'nan') {
             return $this->handleFloat(NAN);
         }
@@ -135,8 +134,6 @@ class FloatCaster implements CasterInterface
     /**
      * Update handleFloat to avoid duplicating validateRange
      *
-     * @param float $value
-     * @return float
      */
     private function handleFloat(float $value): float
     {
@@ -145,6 +142,7 @@ class FloatCaster implements CasterInterface
             if (!$this->allowNaN) {
                 throw new InvalidArgumentException('NaN values are not allowed');
             }
+
             return NAN;
         }
 
@@ -152,6 +150,7 @@ class FloatCaster implements CasterInterface
             if (!$this->allowInfinity) {
                 throw new InvalidArgumentException('Infinity values are not allowed');
             }
+
             return $value;
         }
 
@@ -216,6 +215,7 @@ class FloatCaster implements CasterInterface
 
         if (is_numeric($format)) {
             $decimals = (int) $format;
+
             if ($decimals >= 0) {
                 return round($value, $decimals);
             }

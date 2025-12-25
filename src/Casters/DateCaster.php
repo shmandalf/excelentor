@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Shmandalf\Excelentor\Casters;
 
 use Carbon\Carbon;
-use Shmandalf\Excelentor\Contracts\CasterInterface;
-use InvalidArgumentException;
 use DateTimeInterface;
+use InvalidArgumentException;
+use Shmandalf\Excelentor\Contracts\CasterInterface;
 
 /**
  * 🔮 Date & Time Transmutation Spell
@@ -66,6 +66,7 @@ class DateCaster implements CasterInterface
         // Try via StringCaster as last resort
         try {
             $stringValue = (new StringCaster())->cast($value);
+
             return $this->castFromString($stringValue, $format);
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException(
@@ -80,6 +81,7 @@ class DateCaster implements CasterInterface
         if ($timestamp > 60 && $timestamp < 2958465) {
             // Likely Excel date - 25569 = days from 1900 to 1970
             $unixTimestamp = ($timestamp - 25569) * 86400;
+
             return Carbon::createFromTimestamp((int) $unixTimestamp);
         }
 
@@ -99,6 +101,7 @@ class DateCaster implements CasterInterface
         if ($format !== null) {
             try {
                 $date = Carbon::createFromFormat($format, $value);
+
                 if ($date !== false) {
                     return $this->applyTimezone($date);
                 }
@@ -111,6 +114,7 @@ class DateCaster implements CasterInterface
         foreach ($this->fallbackFormats as $fallbackFormat) {
             try {
                 $date = Carbon::createFromFormat($fallbackFormat, $value);
+
                 if ($date !== false) {
                     return $this->applyTimezone($date);
                 }
@@ -134,6 +138,7 @@ class DateCaster implements CasterInterface
         if ($this->timezone !== null) {
             return $date->setTimezone($this->timezone);
         }
+
         return $date;
     }
 }
