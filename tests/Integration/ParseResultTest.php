@@ -22,23 +22,22 @@ class SimpleTestDTO
 
 class ParseResultTest extends TestCase
 {
-    private ValidatorFactory $validatorFactory;
+    private Parser $parser;
 
     protected function setUp(): void
     {
-        $this->validatorFactory = new ValidatorFactory('en');
+        $validatorFactory = new ValidatorFactory('en');
+        $this->parser = new Parser(SimpleTestDTO::class, $validatorFactory);
     }
 
     public function testParseResultBasicFunctionality(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         $rows = [
             ['Item1', '100'],
             ['Item2', '200'],
         ];
 
-        $result = $parser->parse($rows);
+        $result = $this->parser->parse($rows);
 
         // Test that it implements IteratorAggregate
         $this->assertInstanceOf(\IteratorAggregate::class, $result);
@@ -58,8 +57,6 @@ class ParseResultTest extends TestCase
 
     public function testStatisticsAreCollected(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         // Mix of valid and invalid data
         $rows = [
             ['Item1', '100'],    // Valid
@@ -67,7 +64,7 @@ class ParseResultTest extends TestCase
             ['Item3', '300'],     // Valid
         ];
 
-        $result = $parser->parse($rows);
+        $result = $this->parser->parse($rows);
 
         // Force processing
         $entities = iterator_to_array($result);
@@ -84,14 +81,12 @@ class ParseResultTest extends TestCase
 
     public function testParseResultCanOnlyBeIteratedOnce(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         $rows = [
             ['Item1', '100'],
             ['Item2', '200'],
         ];
 
-        $result = $parser->parse($rows);
+        $result = $this->parser->parse($rows);
 
         // First iteration - should work
         $count1 = 0;
@@ -112,8 +107,6 @@ class ParseResultTest extends TestCase
 
     public function testErrorHandlerCallback(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         $rows = [
             ['Item1', 'invalid'],
         ];
@@ -121,7 +114,7 @@ class ParseResultTest extends TestCase
         $errorTriggered = false;
         $errorMessage = '';
 
-        $result = $parser->parse($rows, function ($error) use (&$errorTriggered, &$errorMessage) {
+        $result = $this->parser->parse($rows, function ($error) use (&$errorTriggered, &$errorMessage) {
             $errorTriggered = true;
             $errorMessage = $error->getMessage();
         });
@@ -134,8 +127,6 @@ class ParseResultTest extends TestCase
 
     public function testErrorHandlerCanStopProcessing(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         $rows = [
             ['Item1', 'invalid'], // This will trigger error
             ['Item2', '200'],     // This should not be processed
@@ -143,7 +134,7 @@ class ParseResultTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
 
-        $result = $parser->parse($rows, function () {
+        $result = $this->parser->parse($rows, function () {
             throw new \RuntimeException('Stop on first error');
         });
 
@@ -152,8 +143,6 @@ class ParseResultTest extends TestCase
 
     public function testToArrayMethod(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         $rows = [
             ['Item1', '100'],
             ['Item2', '200'],
@@ -161,7 +150,7 @@ class ParseResultTest extends TestCase
             ['Item4', '400'],
         ];
 
-        $result = $parser->parse($rows);
+        $result = $this->parser->parse($rows);
         $entities = $result->toArray();
 
         // Should contain only valid entities
@@ -179,15 +168,13 @@ class ParseResultTest extends TestCase
 
     public function testStatsAreAvailableDuringIteration(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         $rows = [
             ['Item1', '100'],
             ['Item2', 'invalid'],
             ['Item3', '300'],
         ];
 
-        $result = $parser->parse($rows);
+        $result = $this->parser->parse($rows);
 
         $processedCounts = [];
 
@@ -203,13 +190,11 @@ class ParseResultTest extends TestCase
 
     public function testIsFinishedMethod(): void
     {
-        $parser = new Parser(SimpleTestDTO::class, $this->validatorFactory);
-
         $rows = [
             ['Item1', '100'],
         ];
 
-        $result = $parser->parse($rows);
+        $result = $this->parser->parse($rows);
 
         // Not finished before iteration
         $this->assertFalse($result->isFinished());
