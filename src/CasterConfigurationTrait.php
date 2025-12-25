@@ -183,7 +183,7 @@ trait CasterConfigurationTrait
      */
     public function withStrictBooleans(): self
     {
-        $strictBoolCaster = new class () implements CasterInterface {
+        $strictBoolCaster = new class() implements CasterInterface {
             public function cast($value, ?string $format = null): bool
             {
                 $value = strtolower(trim((string)$value));
@@ -222,7 +222,7 @@ trait CasterConfigurationTrait
      */
     public function withIntRange(?int $min = null, ?int $max = null): self
     {
-        $intCaster = new class ($min, $max) extends IntCaster {
+        $intCaster = new class($min, $max) extends IntCaster {
             private ?int $min;
             private ?int $max;
 
@@ -268,7 +268,7 @@ trait CasterConfigurationTrait
         int $precision = 2,
         int $mode = PHP_ROUND_HALF_UP
     ): self {
-        $floatCaster = new class ($precision, $mode) extends FloatCaster {
+        $floatCaster = new class($precision, $mode) extends FloatCaster {
             private int $precision;
             private int $mode;
 
@@ -302,7 +302,7 @@ trait CasterConfigurationTrait
         bool $trim = true,
         ?string $case = null
     ): self {
-        $stringCaster = new class ($trim, $case) extends StringCaster {
+        $stringCaster = new class($trim, $case) extends StringCaster {
             private bool $trim;
             private ?string $case;
 
