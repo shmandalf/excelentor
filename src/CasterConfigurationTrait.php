@@ -29,7 +29,7 @@ trait CasterConfigurationTrait
      */
     private function registerDefaultCasters(): void
     {
-        // Стандартные кастеры
+        // Default casters
         $this->casterRegistry['int'] = new IntCaster();
         $this->casterRegistry['integer'] = $this->casterRegistry['int'];
         $this->casterRegistry['float'] = new FloatCaster();
