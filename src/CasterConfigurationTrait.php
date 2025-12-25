@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Shmandalf\Excelentor;
 
 use Carbon\Carbon;
+use ReflectionClass;
+use ReflectionProperty;
+use Shmandalf\Excelentor\Attributes\CasterConfig;
+use Shmandalf\Excelentor\Attributes\Column;
 use Shmandalf\Excelentor\Casters\{
     BoolCaster,
     DateCaster,
@@ -22,6 +26,17 @@ use Shmandalf\Excelentor\Types\Type;
 trait CasterConfigurationTrait
 {
     private array $casterRegistry = [];
+
+    /**
+     * @var array<string, CasterInterface> Caster registry from CasterConfig
+     */
+    private array $configBasedCasterRegistry = [];
+
+    /**
+     * @var array<string, array> Caster configurations from CasterConfig attributes
+     * Format: ['alias' => [casterClass, ...args], 'Type::class' => [casterClass, ...args]]
+     */
+    private array $casterConfigs = [];
 
     /**
      * Register default casters (int, float, bool, string, Carbon)
@@ -48,8 +63,13 @@ trait CasterConfigurationTrait
     /**
      * Register a caster for specific types
      *
+     * This method adds or overrides casters for the given types.
+     * If a type already has a caster from CasterConfig attribute,
+     * this method will override it.
+     *
      * @param CasterInterface $caster The caster instance
      * @param string|Type ...$types Types this caster handles
+     * @return self New Parser instance with updated caster configuration
      */
     public function withCast(CasterInterface $caster, string|Type ...$types): self
     {
@@ -63,7 +83,13 @@ trait CasterConfigurationTrait
             }
 
             foreach ($resolvedTypes as $resolvedType) {
+                // Main registry has highest priority
                 $newParser->casterRegistry[$resolvedType] = $caster;
+
+                // We don't update casterConfigs because:
+                // 1. casterRegistry is checked first in getCasterForType()
+                // 2. This preserves the original CasterConfig definition
+                // 3. User can still see what was originally configured
             }
         }
 
@@ -183,7 +209,7 @@ trait CasterConfigurationTrait
      */
     public function withStrictBooleans(): self
     {
-        $strictBoolCaster = new class() implements CasterInterface {
+        $strictBoolCaster = new class () implements CasterInterface {
             public function cast($value, ?string $format = null): bool
             {
                 $value = strtolower(trim((string)$value));
@@ -222,7 +248,7 @@ trait CasterConfigurationTrait
      */
     public function withIntRange(?int $min = null, ?int $max = null): self
     {
-        $intCaster = new class($min, $max) extends IntCaster {
+        $intCaster = new class ($min, $max) extends IntCaster {
             private ?int $min;
             private ?int $max;
 
@@ -268,7 +294,7 @@ trait CasterConfigurationTrait
         int $precision = 2,
         int $mode = PHP_ROUND_HALF_UP
     ): self {
-        $floatCaster = new class($precision, $mode) extends FloatCaster {
+        $floatCaster = new class ($precision, $mode) extends FloatCaster {
             private int $precision;
             private int $mode;
 
@@ -302,7 +328,7 @@ trait CasterConfigurationTrait
         bool $trim = true,
         ?string $case = null
     ): self {
-        $stringCaster = new class($trim, $case) extends StringCaster {
+        $stringCaster = new class ($trim, $case) extends StringCaster {
             private bool $trim;
             private ?string $case;
 
@@ -402,5 +428,109 @@ trait CasterConfigurationTrait
                 $rowIndex
             );
         }
+    }
+
+    private function parseCasterConfigs(ReflectionClass $reflectionClass): void
+    {
+        // Получаем все атрибуты CasterConfig
+        $configs = $reflectionClass->getAttributes(CasterConfig::class);
+
+        foreach ($configs as $configAttr) {
+            /** @var CasterConfig $config */
+            $config = $configAttr->newInstance();
+
+            // Сохраняем конфигурацию
+            foreach ($config->config as $key => $definition) {
+                $this->casterConfigs[$key] = $definition;
+            }
+        }
+    }
+
+    /**
+     * Register a caster from CasterConfig definition
+     *
+     * @param string $key Type name (ClassName::class) or alias string
+     * @param string|array $definition Caster class name or [className, ...args]
+     */
+    private function registerCasterFromConfig(string $key, string|array $definition): void
+    {
+        if (is_string($definition)) {
+            // Simple mapping: 'alias' => CasterClass::class
+            $casterClass = $definition;
+            $args = [];
+        } else {
+            // Mapping with arguments: 'alias' => [CasterClass::class, arg1, arg2]
+            $casterClass = $definition[0];
+            $args = array_slice($definition, 1);
+        }
+
+        // Create caster instance with arguments
+        $caster = new $casterClass(...$args);
+
+        // Store in config-based registry
+        $this->configBasedCasterRegistry[$key] = $caster;
+    }
+
+    /**
+     * Resolve caster for a property based on Column attribute and property type
+     *
+     * Priority:
+     * 1. Explicit caster alias in Column::caster
+     * 2. Property type mapping from CasterConfig
+     * 3. Already registered casters (from withCast())
+     *
+     * @return CasterInterface|null Resolved caster or null if not found
+     */
+    private function resolveCasterForProperty(ReflectionProperty $prop, Column $column): ?CasterInterface
+    {
+        // Check explicit caster alias from Column attribute
+        if ($column->caster !== null) {
+            return $this->getCasterByAlias($column->caster);
+        }
+
+        $propertyType = $prop->getType()->getName();
+
+        // Otherwise by property type
+        $propertyType = $prop->getType()->getName();
+
+        return $this->getCasterByType($propertyType);
+    }
+
+    private function getCasterByAlias(string $alias): ?CasterInterface
+    {
+        if (!isset($this->casterConfigs[$alias])) {
+            return null;
+        }
+
+        return $this->createCasterFromDefinition($this->casterConfigs[$alias]);
+    }
+
+    private function getCasterByType(string $type): ?CasterInterface
+    {
+        // Сначала ищем в casterConfigs
+        if (isset($this->casterConfigs[$type])) {
+            return $this->createCasterFromDefinition($this->casterConfigs[$type]);
+        }
+
+        // Потом в основном registry (от withCast())
+        if (isset($this->casterRegistry[$type])) {
+            return $this->casterRegistry[$type];
+        }
+
+        return null;
+    }
+
+    private function createCasterFromDefinition(string|array $definition): CasterInterface
+    {
+        if (is_string($definition)) {
+            // Simple class name: 'alias' => CasterClass::class
+            return new $definition();
+        }
+
+        // With arguments: 'alias' => [CasterClass::class, arg1, arg2, ...]
+        $casterClass = $definition[0];
+        $args = array_slice($definition, 1);
+
+        return new $casterClass(...$args);
     }
 }

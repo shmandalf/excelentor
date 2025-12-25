@@ -278,12 +278,52 @@ class Parser implements ParserInterface
     }
 
     /**
+     * Process a single property
+     */
+    private function processProperty(ReflectionProperty $prop): void
+    {
+        $propName = $prop->getName();
+        $attributes = $prop->getAttributes(Column::class);
+
+        if (!$attributes) {
+            return;
+        }
+
+        foreach ($attributes as $attribute) {
+            /** @var Column $column */
+            $column = $attribute->newInstance();
+
+            $this->columns[$propName] = $column;
+            $this->properties[$propName] = $prop;
+
+            // Get column index from header
+            $colIndex = $this->header->getColumnIndex($propName);
+            $this->indexes[$propName] = $colIndex;
+
+            if ($column->mandatory) {
+                $this->mandatoryColumns[$propName] = $colIndex;
+            }
+
+            // Determine caster for this property
+            $caster = $this->resolveCasterForProperty($prop, $column);
+
+            if ($caster) {
+                $type = $prop->getType()->getName();
+                $this->casterRegistry[$type] = $caster;
+            }
+        }
+    }
+
+    /**
      * Prepares properties
      *
      * @throws ParserException
      */
     private function assembleProperties(ReflectionClass $reflectionClass): self
     {
+        // Parse CasterConfig attributes first
+        $this->parseCasterConfigs($reflectionClass);
+
         $props = $reflectionClass->getProperties();
 
         foreach ($props as $prop) {
@@ -317,6 +357,9 @@ class Parser implements ParserInterface
                 if ($column->isMandatory()) {
                     $this->mandatoryColumns[$propName] = $colIndex;
                 }
+
+                // Pass column to processProperty
+                $this->processProperty($prop, $column);
             }
         }
 
