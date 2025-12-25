@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Tests\Casters;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Shmandalf\Excelentor\Casters\FloatCaster;
-use InvalidArgumentException;
 
 class FloatCasterTest extends TestCase
 {
@@ -172,7 +172,7 @@ class FloatCasterTest extends TestCase
 
     public function testConvertsViaStringCaster(): void
     {
-        $object = new class {
+        $object = new class () {
             public function __toString(): string
             {
                 return '42.5';

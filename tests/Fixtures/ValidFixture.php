@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Tests\Fixtures;
@@ -22,13 +23,13 @@ use Shmandalf\Excelentor\Attributes\NoHeader;
 )]
 class ValidFixture
 {
-    #[Column(rule: "email")]
+    #[Column(rule: 'email')]
     public string $email;
 
-    #[Column(mandatory: true, rule: "integer")]
+    #[Column(mandatory: true, rule: 'integer')]
     public int $int;
 
-    #[Column(rule: "nullable|date")]
+    #[Column(rule: 'nullable|date')]
     public ?Carbon $date;
 
     #[Column]

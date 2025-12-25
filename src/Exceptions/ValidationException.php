@@ -16,7 +16,6 @@ class ValidationException extends \Exception
     /**
      * Data/context in which the error occurred
      *
-     * @var array|null
      */
     private ?array $data;
 
@@ -25,7 +24,7 @@ class ValidationException extends \Exception
      *
      * @param string $message The Exception message to throw.
      */
-    function __construct($message = "", ?int $lineNo = null, ?array $data = null)
+    public function __construct($message = '', ?int $lineNo = null, ?array $data = null)
     {
         parent::__construct($message);
 
@@ -36,7 +35,6 @@ class ValidationException extends \Exception
     /**
      * Returns the row number where the validation error occurred
      *
-     * @return int|null
      */
     public function getLineNo(): ?int
     {
@@ -46,7 +44,6 @@ class ValidationException extends \Exception
     /**
      * Returns the error data/context
      *
-     * @return array|null
      */
     public function getData(): ?array
     {

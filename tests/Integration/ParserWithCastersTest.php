@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Tests\Integration;
 
+use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
+use Shmandalf\Excelentor\Attributes\{Column, Header, NoHeader};
 use Shmandalf\Excelentor\Parser;
 use Shmandalf\Excelentor\ValidatorFactory;
-use Shmandalf\Excelentor\Attributes\{Header, Column, NoHeader};
-use Carbon\Carbon;
 
 /**
  * DTO classes for tests
@@ -20,7 +20,7 @@ use Carbon\Carbon;
     2 => 'price',
     3 => 'active',
     4 => 'score',
-    5 => 'created_at'
+    5 => 'created_at',
 ])]
 class ProductImportTestDTO
 {
@@ -153,6 +153,7 @@ class ParserWithCastersTest extends TestCase
 
         // Instead of parseToArray, iterate through the generator
         $results = [];
+
         foreach ($parser->parse($rows) as $index => $result) {
             $results[] = $result;
         }
@@ -252,6 +253,7 @@ class ParserWithCastersTest extends TestCase
         foreach ($trueCases as $case) {
             try {
                 $results = $this->parseToArray($parser, [$case]);
+
                 if (empty($results)) {
                     continue;
                 }
@@ -264,6 +266,7 @@ class ParserWithCastersTest extends TestCase
         foreach ($falseCases as $case) {
             try {
                 $results = $this->parseToArray($parser, [$case]);
+
                 if (empty($results)) {
                     continue;
                 }

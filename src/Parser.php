@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace Shmandalf\Excelentor;
 
 use Carbon\Carbon;
-use Shmandalf\Excelentor\Attributes\{Column, Header, NoHeader};
-use Shmandalf\Excelentor\Casters\DateCaster;
-use Shmandalf\Excelentor\Contracts\{CasterInterface, ParserInterface};
-use Shmandalf\Excelentor\Exceptions\{CastException, ParserException, ValidationException};
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
+use Shmandalf\Excelentor\Attributes\{Column, Header, NoHeader};
 use Shmandalf\Excelentor\Casters\BoolCaster;
+use Shmandalf\Excelentor\Casters\DateCaster;
 use Shmandalf\Excelentor\Casters\FloatCaster;
 use Shmandalf\Excelentor\Casters\IntCaster;
 use Shmandalf\Excelentor\Casters\StringCaster;
-use Shmandalf\Excelentor\ValidatorFactory;
+use Shmandalf\Excelentor\Contracts\{CasterInterface, ParserInterface};
+use Shmandalf\Excelentor\Exceptions\{CastException, ParserException, ValidationException};
 
 class Parser implements ParserInterface
 {
@@ -36,7 +35,6 @@ class Parser implements ParserInterface
     /**
      * Header configuration
      *
-     * @var Header
      */
     private Header $header;
 
@@ -57,7 +55,6 @@ class Parser implements ParserInterface
     /**
      * Column indexes as $propName => $index
      *
-     * @var array
      */
     private array $indexes = [];
 
@@ -73,21 +70,18 @@ class Parser implements ParserInterface
      *
      * Uses column name as key
      *
-     * @var array
      */
     private array $rules = [];
 
     /**
      * Validation error messages
      *
-     * @var array
      */
     private array $messages = [];
 
     /**
      * Array of properties that can accept null
      *
-     * @var array
      */
     private array $nullableProperties = [];
 
@@ -96,7 +90,6 @@ class Parser implements ParserInterface
     /**
      * Constructor
      *
-     * @param string    $mappedClass
      * @param ValidatorFactory $validatorFactory
      */
     public function __construct(string $mappedClass, $validatorFactory)
@@ -173,9 +166,6 @@ class Parser implements ParserInterface
      * Accepts a "raw" row with numeric indexes. Returns an associative array
      * with property names as keys if validation passes.
      *
-     * @param array $row
-     * @param int   $rowIndex
-     * @return array
      * @throws ValidationException
      */
     private function validateRow(array $row, int $rowIndex): array
@@ -197,12 +187,11 @@ class Parser implements ParserInterface
      * Converts a raw array with numeric keys to associative array
      * using property names
      *
-     * @param array $row
-     * @return array
      */
     private function convertIndexedRowToHavePropsNamesAsKeys(array $row): array
     {
         $mappedRow = [];
+
         foreach ($this->columns as $name => $column) {
             $columnIndex = $this->indexes[$name];
             $value = $row[$columnIndex] ?? null;
@@ -215,7 +204,6 @@ class Parser implements ParserInterface
     /**
      * Filters out rows that don't require processing
      *
-     * @param iterable $rows
      * @return \Generator|mixed[]
      */
     private function filterRows(iterable $rows): \Generator
@@ -238,7 +226,6 @@ class Parser implements ParserInterface
     /**
      * Creates caster instances
      *
-     * @return self
      */
     private function registerCasters(): self
     {
@@ -262,8 +249,6 @@ class Parser implements ParserInterface
     /**
      * Reads the header configuration
      *
-     * @param  ReflectionClass $reflectionClass
-     * @return self
      * @throws ParserException
      */
     private function assembleHeader(ReflectionClass $reflectionClass): self
@@ -271,7 +256,7 @@ class Parser implements ParserInterface
         $header = $this->getHeaderAnnotation($reflectionClass);
 
         if ($header === null) {
-            throw new ParserException("Missing @Header or @NoHeader annotation");
+            throw new ParserException('Missing @Header or @NoHeader annotation');
         }
 
         $this->header = $header;
@@ -282,8 +267,6 @@ class Parser implements ParserInterface
     /**
      * Prepares properties
      *
-     * @param ReflectionClass $reflectionClass
-     * @return self
      * @throws ParserException
      */
     private function assembleProperties(ReflectionClass $reflectionClass): self
@@ -305,7 +288,9 @@ class Parser implements ParserInterface
 
             $attributes = $prop->getAttributes(Column::class);
 
-            if (!$attributes) continue;
+            if (!$attributes) {
+                continue;
+            }
 
             foreach ($attributes as $attribute) {
                 $column = $attribute->newInstance();
@@ -315,6 +300,7 @@ class Parser implements ParserInterface
 
                 $colIndex = $this->header->getColumnIndex($propName);
                 $this->indexes[$propName] = $colIndex;
+
                 if ($column->isMandatory()) {
                     $this->mandatoryColumns[$propName] = $colIndex;
                 }
@@ -322,7 +308,7 @@ class Parser implements ParserInterface
         }
 
         if (empty($this->columns)) {
-            throw new ParserException("No @Column annotations found");
+            throw new ParserException('No @Column annotations found');
         }
 
         // Ensure the number of properties matches the number of columns in Header
@@ -353,6 +339,7 @@ class Parser implements ParserInterface
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -364,6 +351,7 @@ class Parser implements ParserInterface
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -386,6 +374,7 @@ class Parser implements ParserInterface
 
             // messages (for Column, there may also be global messages in Header)
             $messages = $column->getMessages();
+
             if ($messages) {
                 foreach ($messages as $k => $message) {
                     $this->messages["{$name}.{$k}"] = $message;
@@ -399,8 +388,6 @@ class Parser implements ParserInterface
     /**
      * Returns the header annotation
      *
-     * @param  ReflectionClass  $reflectionClass
-     * @return Header|null
      */
     private function getHeaderAnnotation(ReflectionClass $reflectionClass): ?Header
     {
@@ -415,13 +402,10 @@ class Parser implements ParserInterface
     /**
      * Parses a validated array that already uses property names as keys
      *
-     * @param  array  $row
-     * @param  int    $rowIndex
-     * @return object
      */
     private function parseValidatedRow(array $row, int $rowIndex): object
     {
-        $obj = new $this->mappedClass;
+        $obj = new $this->mappedClass();
 
         /** @var string $name */
         foreach ($this->properties as $name => $prop) {
@@ -451,10 +435,6 @@ class Parser implements ParserInterface
     /**
      * Casts a string value from spreadsheet to a specific type
      *
-     * @param mixed       $value
-     * @param string      $type
-     * @param string|null $format
-     * @return mixed
      */
     private function castValueToPropType($value, string $type, ?string $format = null, string $propertyName = '', int $rowIndex = 0)
     {
@@ -514,9 +494,6 @@ class Parser implements ParserInterface
      *
      * May return null if the property is not set
      *
-     * @param object $instance
-     * @param ReflectionProperty $property
-     * @return mixed
      */
     private function getDefaultValue(object $instance, ReflectionProperty $property)
     {
@@ -536,7 +513,6 @@ class Parser implements ParserInterface
     /**
      * Returns true if the row is "non-empty", i.e., all mandatory columns have non-empty values
      *
-     * @param  array $row
      * @return boolean
      */
     private function allMandatoryColumnsPresent(array $row): bool

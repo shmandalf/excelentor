@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Tests\Casters;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Shmandalf\Excelentor\Casters\IntCaster;
-use InvalidArgumentException;
 
 class IntCasterTest extends TestCase
 {
@@ -130,7 +130,7 @@ class IntCasterTest extends TestCase
     public function testConvertsViaStringCaster(): void
     {
         // Object with __toString()
-        $object = new class {
+        $object = new class () {
             public function __toString(): string
             {
                 return '42';

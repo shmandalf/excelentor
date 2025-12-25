@@ -18,7 +18,7 @@ class CastException extends \RuntimeException
     private ?int $lineNo;
 
     public function __construct(
-        string $message = "",
+        string $message = '',
         ?string $propertyName = null,
         ?string $expectedType = null,
         mixed $actualValue = null,

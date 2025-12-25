@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Shmandalf\Excelentor\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
+use Shmandalf\Excelentor\Attributes\{Column, Header, NoHeader};
 use Shmandalf\Excelentor\Parser;
 use Shmandalf\Excelentor\ValidatorFactory;
-use Shmandalf\Excelentor\Attributes\{Header, Column, NoHeader};
-use Carbon\Carbon;
 
 /**
  * 🔧 Debug Test DTOs (all classes outside methods)
@@ -167,6 +166,7 @@ class ParserDebugTest extends TestCase
         $invalidRows = [['not-an-email']];
 
         $exceptionThrown = false;
+
         try {
             iterator_to_array($parser->parse($invalidRows));
         } catch (\Shmandalf\Excelentor\Exceptions\ValidationException $e) {
@@ -187,6 +187,7 @@ class ParserDebugTest extends TestCase
         $rows = [['not-a-number']];
 
         $exceptionThrown = false;
+
         try {
             iterator_to_array($parser->parse($rows));
         } catch (\Shmandalf\Excelentor\Exceptions\ValidationException $e) {

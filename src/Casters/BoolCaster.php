@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Casters;
 
-use Shmandalf\Excelentor\Contracts\CasterInterface;
 use InvalidArgumentException;
+use Shmandalf\Excelentor\Contracts\CasterInterface;
 
 /**
  * 🔮 Boolean Transmutation Spell
@@ -56,6 +56,7 @@ class BoolCaster implements CasterInterface
         // For objects and arrays - trying string cast
         try {
             $stringValue = (new StringCaster())->cast($value);
+
             return $this->castString($stringValue);
         } catch (InvalidArgumentException $e) {
             if ($this->strict) {
@@ -63,6 +64,7 @@ class BoolCaster implements CasterInterface
                     sprintf('Cannot convert %s to boolean: %s', gettype($value), $e->getMessage())
                 );
             }
+
             return false; // fallback
         }
     }

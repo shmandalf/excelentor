@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Casters;
 
-use Shmandalf\Excelentor\Contracts\CasterInterface;
 use InvalidArgumentException;
+use Shmandalf\Excelentor\Contracts\CasterInterface;
 
 /**
  * 🔮 String Transmutation Spell
@@ -50,6 +50,7 @@ class StringCaster implements CasterInterface
             if ($format !== null && is_numeric($format)) {
                 return number_format($value, (int) $format, '.', '');
             }
+
             return (string) $value;
         }
 
@@ -61,6 +62,7 @@ class StringCaster implements CasterInterface
         // Object with __toString()
         if (is_object($value) && method_exists($value, '__toString')) {
             $result = (string) $value;
+
             return $this->trim ? trim($result) : $result;
         }
 

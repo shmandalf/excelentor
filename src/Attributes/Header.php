@@ -24,21 +24,18 @@ class Header
      * - key is the column index
      * - value is the property name
      *
-     * @var array
      */
     private array $columns;
 
     /**
      * Global validation messages, i.e., not bound to specific columns
      *
-     * @var array
      */
     private array $messages;
 
     /**
      * Whether to stop execution on the first validation failure
      *
-     * @var bool
      */
     private bool $stopOnFirstFailure;
 
@@ -61,7 +58,7 @@ class Header
         bool $stopOnFirstFailure = false
     ) {
         if (empty($columns)) {
-            throw new ParserException("At least one column must be specified in the header");
+            throw new ParserException('At least one column must be specified in the header');
         }
 
         $this->columns = $columns;
@@ -86,7 +83,6 @@ class Header
      * In $columns, keys can be either numeric or string in Excel column format (e.g., "A", "AB").
      *
      * @param  string $name - column (property) name
-     * @return int
      */
     public function getColumnIndex(string $name): int
     {
@@ -115,7 +111,6 @@ class Header
     /**
      * Returns an array with column indexes
      *
-     * @return array
      */
     public function getColumns(): array
     {
@@ -125,7 +120,6 @@ class Header
     /**
      * Returns an array with "global" validation messages
      *
-     * @return array
      */
     public function getMessages(): array
     {
@@ -140,7 +134,6 @@ class Header
     /**
      * Converts an Excel-style column name (e.g., "A", "AB") to a zero-based numeric index
      *
-     * @param string $name
      * @return integer
      */
     private function excelColumnNameToNumber(string $name): int

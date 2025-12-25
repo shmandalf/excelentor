@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shmandalf\Excelentor;
 
-use Illuminate\Validation\Factory;
-use Illuminate\Translation\Translator;
 use Illuminate\Translation\ArrayLoader;
+use Illuminate\Translation\Translator;
+use Illuminate\Validation\Factory;
 
 /**
  * Using Illuminate Validator at this moment only
@@ -22,9 +24,6 @@ class ValidatorFactory
     }
 
     /**
-     * @param array $data
-     * @param array $rules
-     * @param array $messages
      * @return \Illuminate\Validation\Validator
      */
     public function make(array $data, array $rules, array $messages = [])

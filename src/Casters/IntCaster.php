@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Casters;
 
-use Shmandalf\Excelentor\Contracts\CasterInterface;
 use InvalidArgumentException;
+use Shmandalf\Excelentor\Contracts\CasterInterface;
 
 class IntCaster implements CasterInterface
 {
@@ -50,6 +50,7 @@ class IntCaster implements CasterInterface
 
         try {
             $stringValue = (new StringCaster())->cast($value);
+
             return $this->castString($stringValue);
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException(
@@ -75,6 +76,7 @@ class IntCaster implements CasterInterface
         }
 
         $result = (int)$value;
+
         return $this->validateRange($result);
     }
 
@@ -93,6 +95,7 @@ class IntCaster implements CasterInterface
         if (preg_match('/^-?\d+\.\d+$/', $value)) {
             // Check if it's actually an integer (e.g., "1.0", "2.00")
             $floatVal = (float) $value;
+
             if (floor($floatVal) != $floatVal) {
                 throw new InvalidArgumentException(
                     sprintf('String value "%s" has decimal part', $value)
@@ -112,6 +115,7 @@ class IntCaster implements CasterInterface
         }
 
         $filtered = filter_var($cleaned, FILTER_VALIDATE_INT);
+
         if ($filtered === false) {
             throw new InvalidArgumentException(
                 sprintf('Value "%s" causes integer overflow', $value)

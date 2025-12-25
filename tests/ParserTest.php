@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shmandalf\Excelentor\Tests;
 
 use Carbon\Carbon;
@@ -23,7 +25,7 @@ class ParserTest extends TestCase
         $parser = new Parser(ValidFixture::class, $this->validatorFactory);
 
         $rows = [
-            ['some@there.com', 1, '31.10.1977', '', 123.23]
+            ['some@there.com', 1, '31.10.1977', '', 123.23],
         ];
 
         $result = iterator_to_array($parser->parse($rows));

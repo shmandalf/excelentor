@@ -13,7 +13,6 @@ interface ParserInterface
      *
      * Returns array with validation exceptions
      *
-     * @param iterable $rows
      * @return ValidationException[]
      */
     public function validateAll(iterable $rows): array;
@@ -21,9 +20,8 @@ interface ParserInterface
     /**
      * Parse data
      *
-     * @param iterable $rows
-     * @return \Generator|object[] - resulting DTOs
      * @throws ValidationException
+     * @return \Generator|object[] - resulting DTOs
      */
     public function parse(iterable $rows): \Generator;
 }
