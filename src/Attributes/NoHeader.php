@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Attributes;
@@ -9,15 +10,15 @@ use Attribute;
 class NoHeader extends Header
 {
     /**
-     * Конструктор
+     * Constructor
      *
-     * @param array   $columns  - маппинги столбцов (index -> имя пропса)
-     * @param array   $messages - "глобальные" сообщения валидации
-     * @param bool    $stopOnFirstFailure - останоить ли выполнение в случае первой ошибки
+     * @param array   $columns  - column mappings (index -> property name)
+     * @param array   $messages - "global" validation messages
+     * @param bool    $stopOnFirstFailure - whether to stop execution on the first error
      */
     public function __construct(array $columns, array $messages = [], bool $stopOnFirstFailure = false)
     {
-        // Отсутствует header. Используем 0 строк, но используем маппинги
+        // No header present. Use 0 rows but apply mappings
         parent::__construct($columns, 0, $messages, $stopOnFirstFailure);
     }
 }

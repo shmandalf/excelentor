@@ -7,14 +7,14 @@ namespace Shmandalf\Excelentor\Exceptions;
 class ValidationException extends \Exception
 {
     /**
-     * Номер строки с ошибкой
+     * Row number where the error occurred
      *
      * @var integer|null
      */
     private ?int $lineNo;
 
     /**
-     * Данные/контекст, где возникла ошибка
+     * Data/context in which the error occurred
      *
      * @var array|null
      */
@@ -34,7 +34,7 @@ class ValidationException extends \Exception
     }
 
     /**
-     * Возвращает номер строки, в которой произошла ошибка валидации
+     * Returns the row number where the validation error occurred
      *
      * @return int|null
      */
@@ -44,7 +44,7 @@ class ValidationException extends \Exception
     }
 
     /**
-     * Возвращает данные/контекст ошибки
+     * Returns the error data/context
      *
      * @return array|null
      */

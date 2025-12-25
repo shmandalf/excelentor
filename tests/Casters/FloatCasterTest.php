@@ -46,10 +46,10 @@ class FloatCasterTest extends TestCase
 
     public function testConvertsStringWithCommaDecimal(): void
     {
-        // Для европейского формата "1.234,56" нужно указать оба разделителя
+        // For european format "1.234,56" need to provide both separators
         $caster = new FloatCaster(
             decimalSeparator: ',',
-            thousandsSeparator: '.'  // Точка как разделитель тысяч
+            thousandsSeparator: '.'  // dot as thousands separator
         );
 
         $this->assertSame(3.14, $caster->cast('3,14'));
@@ -59,7 +59,7 @@ class FloatCasterTest extends TestCase
 
     public function testConvertsStringWithDefaultFormat(): void
     {
-        // По умолчанию: точка как десятичный, запятая как тысячи (американский)
+        // By default: US format
         $this->assertSame(1234.56, $this->caster->cast('1,234.56'));
         $this->assertSame(1234567.89, $this->caster->cast('1,234,567.89'));
     }
@@ -159,13 +159,13 @@ class FloatCasterTest extends TestCase
         // String input
         $this->assertEqualsWithDelta(3.14, $this->caster->cast('3.14159', '2'), 0.0001);
 
-        // Integer input with decimals - 42 с форматом '2' это все еще 42.0 как float
+        // Integer input with decimals - 42 with format '2' is still considered 42.0 as float
         $this->assertEqualsWithDelta(42.0, $this->caster->cast(42, '2'), 0.0001);
     }
 
     public function testFloatPrecision(): void
     {
-        // Проверяем что round работает правильно
+        // Rounding must be working correctly
         $this->assertEqualsWithDelta(2.68, $this->caster->cast(2.675, '2'), 0.0001); // round(2.675, 2) = 2.68
         $this->assertEqualsWithDelta(2.67, $this->caster->cast(2.674, '2'), 0.0001); // round(2.674, 2) = 2.67
     }

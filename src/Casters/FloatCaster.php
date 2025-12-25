@@ -87,14 +87,19 @@ class FloatCaster implements CasterInterface
         return $this->validateRange($result);
     }
 
-    // Убираем применение формата из handleString
+    /**
+     * Remove applying format from handleString
+     *
+     * @param string $value
+     * @return float
+     */
     private function handleString(string $value): float
     {
         $value = trim($value);
 
         if ($value === '') {
-            // Пустая строка - FloatCaster не должен обрабатывать null!
-            // Null обрабатывается в Parser до вызова кастера
+            // Emptry string - FloatCaster shouldn't process null!
+            // Null is handled in Parser before calling a caster
             throw new InvalidArgumentException('Empty string cannot be converted to float');
         }
 
@@ -124,10 +129,15 @@ class FloatCaster implements CasterInterface
             );
         }
 
-        return $floatValue; // Не применяем validateRange здесь - будет в конце cast
+        return $floatValue; // Not applying validateRange here - will be done at the end of cast
     }
 
-    // Также обновляем handleFloat чтобы не дублировать validateRange
+    /**
+     * Update handleFloat to avoid duplicating validateRange
+     *
+     * @param float $value
+     * @return float
+     */
     private function handleFloat(float $value): float
     {
         // Check special values
@@ -145,7 +155,7 @@ class FloatCaster implements CasterInterface
             return $value;
         }
 
-        return $value; // Не применяем validateRange здесь
+        return $value; // Not applying validateRange here
     }
 
     private function handleNull(): float

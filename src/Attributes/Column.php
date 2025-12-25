@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Attributes;
@@ -9,42 +10,39 @@ use Attribute;
 class Column
 {
     /**
-     * Правило валидации
+     * Validation rule
      *
      * @var string|null
      */
     private ?string $rule;
 
     /**
-     * Кастомные сообщения об ошибках валидации
+     * Custom messages about validation errors
      *
      * @var array
      */
     private array $messages;
 
     /**
-     * Формат столбца.
-     *
-     * Может использоваться для импорта дат и прочего.
+     * Column format
      *
      * @var string|null
      */
     private ?string $format;
 
     /**
-     * Строка считается "не пустой", если все столбцы с этим флагом присутствуют в строке
+     * A row is treated not "empty" if all "mandatory" columns are present in the row
+     * Otherwise the row will be skipped
      *
      * @var boolean
      */
     private bool $mandatory;
 
     /**
-     * Конструктор
-     *
-     * @param string|null  $rule      - правило валидации
-     * @param string       $format    - формат (e.g. для импорта дат)
-     * @param array        $messages  - опциональный массив с кастомными сообщениями об ошибке валидации
-     * @param boolean      $mandatory - `true`, если значение столбца должно присутствовать в строке, чтобы она не считалась "пустой"
+     * @param string|null  $rule      - validation rule
+     * @param string       $format    - format (e.g. for parsing dates)
+     * @param array        $messages  - optional array with custom messages about validation errors
+     * @param boolean      $mandatory - if `true`, the value must not be empty for the row to be processed
      */
     public function __construct(?string $rule = null, ?string $format = null, array $messages = [], bool $mandatory = false)
     {
@@ -55,8 +53,6 @@ class Column
     }
 
     /**
-     * Геттер правила валидации
-     *
      * @return string|null
      */
     public function getRule(): ?string
@@ -65,8 +61,6 @@ class Column
     }
 
     /**
-     * Геттер кастомных сообщений об ошибках валидации
-     *
      * @return array
      */
     public function getMessages(): array
@@ -75,8 +69,6 @@ class Column
     }
 
     /**
-     * Геттер для "mandatory"
-     *
      * @return boolean
      */
     public function isMandatory(): bool
@@ -85,8 +77,6 @@ class Column
     }
 
     /**
-     * Геттер формата столбца.
-     *
      * @return string|null
      */
     public function getFormat(): ?string

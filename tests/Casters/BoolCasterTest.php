@@ -115,14 +115,13 @@ class BoolCasterTest extends TestCase
         $this->assertFalse($caster->cast('disable'));
         $this->assertFalse($caster->cast('fail'));
 
-        // Стандартные значения больше не работают
         $this->expectException(InvalidArgumentException::class);
         $caster->cast('true');
     }
 
     public function testConvertsViaStringCaster(): void
     {
-        // Объект с __toString()
+        // Object with __toString()
         $object = new class {
             public function __toString(): string
             {
@@ -132,7 +131,7 @@ class BoolCasterTest extends TestCase
 
         $this->assertTrue($this->caster->cast($object));
 
-        // Объект с числовым значением
+        // Object with a numeric value
         $numericObject = new class {
             public function __toString(): string
             {

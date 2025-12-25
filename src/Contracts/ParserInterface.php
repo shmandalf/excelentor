@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Shmandalf\Excelentor\Contracts;
@@ -8,7 +9,9 @@ use Shmandalf\Excelentor\Exceptions\ValidationException;
 interface ParserInterface
 {
     /**
-     * Проверяет все возможные строки сразу, возвращая массив с ошибками если есть
+     * Validate all rows
+     *
+     * Returns array with validation exceptions
      *
      * @param iterable $rows
      * @return ValidationException[]
@@ -16,13 +19,11 @@ interface ParserInterface
     public function validateAll(iterable $rows): array;
 
     /**
-     * Валидирует и парсит таблицу
+     * Parse data
      *
      * @param iterable $rows
-     * @return \Generator|object[] - массив с POPO
+     * @return \Generator|object[] - resulting DTOs
      * @throws ValidationException
      */
     public function parse(iterable $rows): \Generator;
 }
-
-

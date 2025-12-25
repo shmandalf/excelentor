@@ -9,7 +9,8 @@ use Shmandalf\Excelentor\Parser;
 use Shmandalf\Excelentor\Tests\Fixtures\ValidFixture;
 use Shmandalf\Excelentor\ValidatorFactory;
 
-class ParserTest extends TestCase {
+class ParserTest extends TestCase
+{
     private ValidatorFactory $validatorFactory;
 
     protected function setUp(): void
@@ -17,10 +18,8 @@ class ParserTest extends TestCase {
         $this->validatorFactory = new ValidatorFactory('ru');
     }
 
-    /**
-     * Для простоты протестируем на одном row
-     */
-    public function test_parsing_success() {
+    public function test_parsing_success()
+    {
         $parser = new Parser(ValidFixture::class, $this->validatorFactory);
 
         $rows = [
@@ -32,14 +31,14 @@ class ParserTest extends TestCase {
         // Assert
         $item = $result[0];
 
-        // Проверяем что все свойства существуют
+        // All properties exist
         $this->assertObjectHasProperty('email', $item);
         $this->assertObjectHasProperty('int', $item);
         $this->assertObjectHasProperty('date', $item);
         $this->assertObjectHasProperty('string', $item);
         $this->assertObjectHasProperty('float', $item);
 
-        // Проверяем типы свойств через рефлексию
+        // Validating property types
         $reflection = new ReflectionClass($item);
 
         $emailProp = $reflection->getProperty('email');
@@ -60,5 +59,4 @@ class ParserTest extends TestCase {
         $this->assertSame('float', $floatProp->getType()->getName());
         $this->assertTrue($floatProp->getType()->allowsNull());
     }
-
 }

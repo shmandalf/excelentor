@@ -11,47 +11,47 @@ use Shmandalf\Excelentor\Exceptions\ParserException;
 class Header
 {
     /**
-     * Количество строк, занимаемых заголовком
+     * Number of rows occupied by the header
      *
      * @var integer
      */
     private int $rows;
 
     /**
-     * Маппинг столбцов.
+     * Column mapping.
      *
-     * Массив, где:
-     * - ключ, это индекс столбца
-     * - значение, это имя пропса
+     * An array where:
+     * - key is the column index
+     * - value is the property name
      *
      * @var array
      */
     private array $columns;
 
     /**
-     * Глобальные сообщения валидации, т.е. не привязанные к столбцам
+     * Global validation messages, i.e., not bound to specific columns
      *
      * @var array
      */
     private array $messages;
 
     /**
-     * Следует ли остановить выполнение в случае возникновения ошибки
+     * Whether to stop execution on the first validation failure
      *
      * @var bool
      */
     private bool $stopOnFirstFailure;
 
     /**
-     * Конструктор.
+     * Constructor.
      *
-     * Обязательно требуется передавать число строк, занимаемых заголовком.
-     * Если заголовок отсутствует, то необходимо использовать NoHeader.
+     * The number of rows occupied by the header must be provided.
+     * If there is no header, use NoHeader instead.
      *
      * @see NoHeader
      *
-     * @param array   $columns  - маппинги столбцов (index -> имя пропса)
-     * @param integer $rows     - кол-во строк в заголовке
+     * @param array   $columns  - column mappings (index -> property name)
+     * @param integer $rows     - number of header rows
      *
      */
     public function __construct(
@@ -71,7 +71,7 @@ class Header
     }
 
     /**
-     * Геттер числа строк в заголовке
+     * Getter for the number of header rows
      *
      * @return integer
      */
@@ -81,16 +81,16 @@ class Header
     }
 
     /**
-     * Возвращает индекс поля по имени.
+     * Returns the column index by its name.
      *
-     * В $columns ключи могут быть как числовыми, так и строковыми в формате названий столбцов в XLS файлах.
+     * In $columns, keys can be either numeric or string in Excel column format (e.g., "A", "AB").
      *
-     * @param  string $name - имя столбца (свойства)
+     * @param  string $name - column (property) name
      * @return int
      */
     public function getColumnIndex(string $name): int
     {
-        // преобразуем в $name => $index
+        // Convert to $name => $index mapping
         $columns = array_flip($this->columns);
         $index = $columns[$name] ?? null;
 
@@ -103,7 +103,7 @@ class Header
                 throw new ParserException("Empty string index for column `{$name}`");
             }
 
-            // Если индекс начинается с символа, преобразуем в int
+            // If the index starts with a letter, convert it to an integer
             if (ctype_alnum(substr($index, 0, 1))) {
                 $index = $this->excelColumnNameToNumber($index);
             }
@@ -113,7 +113,7 @@ class Header
     }
 
     /**
-     * Возвращает массив с индексами полей
+     * Returns an array with column indexes
      *
      * @return array
      */
@@ -123,7 +123,7 @@ class Header
     }
 
     /**
-     * Возвращает массив с "глобальными" сообщениями валидации
+     * Returns an array with "global" validation messages
      *
      * @return array
      */
@@ -138,7 +138,7 @@ class Header
     }
 
     /**
-     * Возвращает индекс столбца в виде числа из строки вида "A1" (Excel format)
+     * Converts an Excel-style column name (e.g., "A", "AB") to a zero-based numeric index
      *
      * @param string $name
      * @return integer
@@ -151,7 +151,7 @@ class Header
             $value = $value * 26 + (ord($char) - ord('A') + 1);
         }
 
-        // Так как "внутренний" индекс начинается с нуля, отнимем единицу
+        // Since internal indexes are zero-based, subtract one
         $value--;
 
         return $value;

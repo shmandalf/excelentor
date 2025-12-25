@@ -11,7 +11,7 @@ use Shmandalf\Excelentor\Attributes\{Header, Column, NoHeader};
 use Carbon\Carbon;
 
 /**
- * 🔧 Debug Test DTOs (все классы ВНЕ методов)
+ * 🔧 Debug Test DTOs (all classes outside methods)
  */
 
 #[NoHeader(columns: [0 => 'name', 1 => 'age'])]
@@ -66,7 +66,7 @@ class IntDebugTestDTO
 }
 
 /**
- * 🔧 Debug Test: Базовая проверка работы Parser
+ * 🔧 Debug Test: Base Parser check
  */
 class ParserDebugTest extends TestCase
 {
@@ -78,7 +78,7 @@ class ParserDebugTest extends TestCase
     }
 
     /**
-     * Простейший тест чтобы проверить что парсер вообще работает
+     * Simplest test to make sure the Parser is working
      */
     public function testBasicParsingWorks(): void
     {
@@ -95,7 +95,7 @@ class ParserDebugTest extends TestCase
     }
 
     /**
-     * Тест только для String типа (самый простой)
+     * Simple test for the String type
      */
     public function testStringParsingOnly(): void
     {
@@ -110,7 +110,7 @@ class ParserDebugTest extends TestCase
     }
 
     /**
-     * Тест с Header (проверяем что заголовок пропускается)
+     * Header test (making sure the header is skipped)
      */
     public function testWithHeader(): void
     {
@@ -123,7 +123,7 @@ class ParserDebugTest extends TestCase
 
         $results = iterator_to_array($parser->parse($rows));
 
-        // Результаты имеют ключи 1 и 2, не 0 и 1!
+        // Results have keys 1 and 2, not 0 and 1!
         $this->assertCount(2, $results);
         $this->assertArrayHasKey(1, $results, 'Should have key 1 (first data row)');
         $this->assertArrayHasKey(2, $results, 'Should have key 2 (second data row)');
@@ -133,37 +133,37 @@ class ParserDebugTest extends TestCase
     }
 
     /**
-     * Тест с nullable полем
+     * Nullable value test
      */
     public function testNullableField(): void
     {
         $parser = new Parser(NullableDebugTestDTO::class, $this->validatorFactory);
 
-        // Тест 1: с optional значением
+        // Test 1: with optional value
         $rows1 = [['John', 'value']];
         $results1 = iterator_to_array($parser->parse($rows1));
         $this->assertSame('value', $results1[0]->optional);
 
-        // Тест 2: без optional значения (пустая строка)
+        // Test 2: without optional value (empty string)
         $rows2 = [['Jane', '']];
         $results2 = iterator_to_array($parser->parse($rows2));
         $this->assertNull($results2[0]->optional);
     }
 
     /**
-     * Тест с валидацией
+     * Test with validation
      */
     public function testValidation(): void
     {
         $parser = new Parser(EmailDebugTestDTO::class, $this->validatorFactory);
 
-        // Валидный email
+        // Valid email
         $validRows = [['test@example.com']];
         $results = iterator_to_array($parser->parse($validRows));
         $this->assertCount(1, $results);
         $this->assertSame('test@example.com', $results[0]->email);
 
-        // Невалидный email - должно бросить исключение
+        // Invalid email - an exception must be thrown
         $invalidRows = [['not-an-email']];
 
         $exceptionThrown = false;
@@ -177,13 +177,13 @@ class ParserDebugTest extends TestCase
     }
 
     /**
-     * Тест с исключением при кастинге
+     * Test with exception when casting
      */
     public function testCastingException(): void
     {
         $parser = new Parser(IntDebugTestDTO::class, $this->validatorFactory);
 
-        // Невалидное число
+        // Invalid number
         $rows = [['not-a-number']];
 
         $exceptionThrown = false;

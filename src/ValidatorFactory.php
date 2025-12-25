@@ -7,7 +7,7 @@ use Illuminate\Translation\Translator;
 use Illuminate\Translation\ArrayLoader;
 
 /**
- * Для простоты проекта используется жесткая связь с Illuminate Validator.
+ * Using Illuminate Validator at this moment only
  */
 class ValidatorFactory
 {

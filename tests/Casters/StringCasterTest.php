@@ -41,8 +41,8 @@ class StringCasterTest extends TestCase
         $this->assertSame('3.14', $this->caster->cast(3.14, '2'));
         $this->assertSame('3.140', $this->caster->cast(3.14, '3'));
         $this->assertSame('1000.50', $this->caster->cast(1000.5, '2'));
-        $this->assertSame('1001', $this->caster->cast(1000.5, '0')); // Округляется вверх
-        $this->assertSame('1000', $this->caster->cast(1000.4, '0')); // Округляется вниз
+        $this->assertSame('1001', $this->caster->cast(1000.5, '0')); // Rounding up
+        $this->assertSame('1000', $this->caster->cast(1000.4, '0')); // Rounding down
         $this->assertSame('1234567.89', $this->caster->cast(1234567.89, '2'));
     }
 
@@ -52,12 +52,12 @@ class StringCasterTest extends TestCase
         $this->assertSame('0', $this->caster->cast(0.4, '0'));
         $this->assertSame('2', $this->caster->cast(1.5, '0'));
         $this->assertSame('1.55', $this->caster->cast(1.545, '2'));
-        $this->assertSame('1.55', $this->caster->cast(1.545, '2')); // number_format округляет
+        $this->assertSame('1.55', $this->caster->cast(1.545, '2')); // number_format for rounding
     }
 
     public function testIgnoresNonNumericFormat(): void
     {
-        // Нечисловой формат игнорируется
+        // Non-numeric format is ignored
         $this->assertSame('3.14', $this->caster->cast(3.14, 'invalid'));
     }
 

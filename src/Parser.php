@@ -23,9 +23,9 @@ class Parser implements ParserInterface
     /**
      * Data caster registry
      *
-     * Хранит инстансы кастеров.
-     * Ключ - строковое представление типа (integer/string/etc)
-     * Значение - инстанс кастера CasterInterface
+     * Stores instances of casters.
+     * Key - string representation of the type (integer/string/etc)
+     * Value - caster instance implementing CasterInterface
      *
      * @var CasterInterface[]
      */
@@ -34,65 +34,67 @@ class Parser implements ParserInterface
     private string $mappedClass;
 
     /**
-     * Header
+     * Header configuration
      *
      * @var Header
      */
     private Header $header;
 
     /**
-     * Columns
+     * Column configurations
      *
      * @var Column[]
      */
-    private array $columns;
+    private array $columns = [];
 
     /**
      * Properties of the class
      *
      * @var ReflectionProperty[]
      */
-    private array $properties;
+    private array $properties = [];
 
     /**
-     * Индексы столбцов в виде $propName => $index
+     * Column indexes as $propName => $index
      *
      * @var array
      */
     private array $indexes = [];
 
     /**
-     * Индексы столбцов, которые должны присутствовать в строке, чтобы она считалась "не пустой"
+     * Indexes of columns that must be present in a row for it to be considered "non-empty"
      *
      * @var int[]
      */
     private array $mandatoryColumns = [];
 
     /**
-     * Правила валидации
+     * Validation rules
      *
-     * Использует имя столбца в качестве ключа
+     * Uses column name as key
      *
      * @var array
      */
     private array $rules = [];
 
     /**
-     * Сообщения об ошибках валидации
+     * Validation error messages
      *
      * @var array
      */
     private array $messages = [];
 
     /**
-     * Массив свойств, которые могут принимать null
+     * Array of properties that can accept null
+     *
+     * @var array
      */
     private array $nullableProperties = [];
 
     private ValidatorFactory $validatorFactory;
 
     /**
-     * Конструктор
+     * Constructor
      *
      * @param string    $mappedClass
      * @param ValidatorFactory $validatorFactory
@@ -111,9 +113,9 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Проверяет входные данные.
+     * Validates all input data.
      *
-     * @return ValidationException[] - или пустой массив, если ошибок не обнаружено
+     * @return ValidationException[] - empty array if no errors found
      */
     public function validateAll(iterable $rows): array
     {
@@ -166,10 +168,10 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Валидирует строку.
+     * Validates a single row.
      *
-     * На входе получает "сырую" строку с числовыми индексами. В случае успешного прохождения
-     * валидации возвращает ассоциативный массив с именами пропсов в виде ключей.
+     * Accepts a "raw" row with numeric indexes. Returns an associative array
+     * with property names as keys if validation passes.
      *
      * @param array $row
      * @param int   $rowIndex
@@ -178,7 +180,7 @@ class Parser implements ParserInterface
      */
     private function validateRow(array $row, int $rowIndex): array
     {
-        // Преобразуем $row в ассоциативный массив
+        // Convert $row to associative array
         $mappedRow = $this->convertIndexedRowToHavePropsNamesAsKeys($row);
 
         $validator = $this->validatorFactory->make($mappedRow, $this->rules, $this->messages);
@@ -192,8 +194,8 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Преобразовывает исходный "сырой" массив с числовыми ключами в ассоциативный,
-     * используя имена свойств
+     * Converts a raw array with numeric keys to associative array
+     * using property names
      *
      * @param array $row
      * @return array
@@ -211,7 +213,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Исключает строки, которые не требуют обработки
+     * Filters out rows that don't require processing
      *
      * @param iterable $rows
      * @return \Generator|mixed[]
@@ -219,12 +221,12 @@ class Parser implements ParserInterface
     private function filterRows(iterable $rows): \Generator
     {
         foreach ($rows as $rowIndex => $row) {
-            // пропускаем Header rows
+            // skip Header rows
             if ($rowIndex < $this->header->getRows()) {
                 continue;
             }
 
-            // Не обрабатываем строки, которые не содержат всех обязательных значений
+            // Skip rows that don't contain all mandatory values
             if (!$this->allMandatoryColumnsPresent($row)) {
                 continue;
             }
@@ -234,7 +236,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Создает инстансы кастеров
+     * Creates caster instances
      *
      * @return self
      */
@@ -256,8 +258,9 @@ class Parser implements ParserInterface
 
         return $this;
     }
+
     /**
-     * Читаем заголовок
+     * Reads the header configuration
      *
      * @param  ReflectionClass $reflectionClass
      * @return self
@@ -277,7 +280,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Подготавливаем пропсы.
+     * Prepares properties
      *
      * @param ReflectionClass $reflectionClass
      * @return self
@@ -290,12 +293,12 @@ class Parser implements ParserInterface
         foreach ($props as $prop) {
             $propName = $prop->getName();
 
-            // Удостоверимся, что у свойства явно указан тип
+            // Ensure the property has an explicitly declared type
             if ($prop->getType() === null) {
-                throw new ParserException("Необходимо явно указать тип свойства `{$propName}`");
+                throw new ParserException("Property `{$propName}` must have an explicitly declared type");
             }
 
-            // Обработка union types, например string|null
+            // Handle union types, e.g., string|null
             if ($this->checkNullable($prop)) {
                 $this->nullableProperties[$propName] = true;
             }
@@ -322,8 +325,8 @@ class Parser implements ParserInterface
             throw new ParserException("No @Column annotations found");
         }
 
-        // Удостоверимся, что число пропсов совпадает с числом столбцов в Header
-        if (sizeof($this->header->getColumns()) !== sizeof($this->columns)) {
+        // Ensure the number of properties matches the number of columns in Header
+        if (count($this->header->getColumns()) !== count($this->columns)) {
             throw new ParserException("@Header columns count doesn't match the @Column count");
         }
 
@@ -335,15 +338,15 @@ class Parser implements ParserInterface
         $type = $prop->getType();
 
         if ($type === null) {
-            return false; // или бросать исключение, как у тебя уже есть
+            return false; // or throw exception as you already have
         }
 
-        // Для простых типов
+        // For simple types
         if ($type instanceof \ReflectionNamedType) {
             return $type->allowsNull();
         }
 
-        // Для union types (например string|null)
+        // For union types (e.g., string|null)
         if ($type instanceof \ReflectionUnionType) {
             foreach ($type->getTypes() as $subType) {
                 if ($subType instanceof \ReflectionNamedType && $subType->getName() === 'null') {
@@ -353,9 +356,9 @@ class Parser implements ParserInterface
             return false;
         }
 
-        // Для intersection types (PHP 8.1+)
+        // For intersection types (PHP 8.1+)
         if ($type instanceof \ReflectionIntersectionType) {
-            // В intersection типах null не может быть частью, но на всякий случай
+            // null cannot be part of an intersection, but check just in case
             foreach ($type->getTypes() as $subType) {
                 if ($subType instanceof \ReflectionNamedType && $subType->getName() === 'null') {
                     return true;
@@ -369,10 +372,10 @@ class Parser implements ParserInterface
 
     private function assembleValidation(): self
     {
-        // Сообщения валидации из Header
+        // Validation messages from Header
         $this->messages = $this->header->getMessages();
 
-        // Правила валидации для строк
+        // Validation rules for rows
         foreach ($this->columns as $name => $column) {
             // rules
             $rule = $column->getRule();
@@ -381,7 +384,7 @@ class Parser implements ParserInterface
                 $this->rules[$name] = $rule;
             }
 
-            // messages (для Col, еще могут быть заданы global messages в Header)
+            // messages (for Column, there may also be global messages in Header)
             $messages = $column->getMessages();
             if ($messages) {
                 foreach ($messages as $k => $message) {
@@ -394,7 +397,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Возвращает annotation для заголовка
+     * Returns the header annotation
      *
      * @param  ReflectionClass  $reflectionClass
      * @return Header|null
@@ -403,14 +406,14 @@ class Parser implements ParserInterface
     {
         $header = $reflectionClass->getAttributes(Header::class)[0] ?? null;
 
-        // Если Header не задан, проверяем NoHeader
+        // If Header not set, check for NoHeader
         $header ??= $reflectionClass->getAttributes(NoHeader::class)[0] ?? null;
 
         return $header?->newInstance() ?? null;
     }
 
     /**
-     * Парсинг валидированного массива, уже использующего имена пропсов в виде ключей
+     * Parses a validated array that already uses property names as keys
      *
      * @param  array  $row
      * @param  int    $rowIndex
@@ -425,10 +428,10 @@ class Parser implements ParserInterface
             $propTypeName = $prop->getType()->getName();
             $format = $this->columns[$name]->getFormat();
 
-            // Проверяем на null, а не на falsy!
+            // Check for null, not falsy!
             $value = $row[$name] ?? $this->getDefaultValue($obj, $prop);
 
-            // Если пустая строка и свойство nullable - преобразуем в null
+            // If empty string and property is nullable - convert to null
             if ($value === '' && ($this->nullableProperties[$name] ?? false)) {
                 $value = null;
             }
@@ -446,7 +449,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Преобразовывает строковое значение из spreadsheet в определенный тип
+     * Casts a string value from spreadsheet to a specific type
      *
      * @param mixed       $value
      * @param string      $type
@@ -507,9 +510,9 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Возвращает значение свойства по умолчанию
+     * Returns the default value of a property
      *
-     * Может вернуть null если свойство не задано
+     * May return null if the property is not set
      *
      * @param object $instance
      * @param ReflectionProperty $property
@@ -519,10 +522,10 @@ class Parser implements ParserInterface
     {
         if ($property->isInitialized($instance)) {
             try {
-                // Пытаемся получить default value свойства
+                // Try to get the property's default value
                 return $property->getValue($instance);
             } catch (ReflectionException $e) {
-                // Нет default value - возвращаем null
+                // No default value - return null
                 return null;
             }
         }
@@ -531,7 +534,7 @@ class Parser implements ParserInterface
     }
 
     /**
-     * Возвращает true, если строка "не пустая", т.е. все обязательные столбцы имеют непустые значения
+     * Returns true if the row is "non-empty", i.e., all mandatory columns have non-empty values
      *
      * @param  array $row
      * @return boolean

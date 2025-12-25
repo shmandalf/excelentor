@@ -11,7 +11,7 @@ use Shmandalf\Excelentor\Attributes\{Header, Column, NoHeader};
 use Carbon\Carbon;
 
 /**
- * DTO классы для тестов
+ * DTO classes for tests
  */
 
 #[Header(columns: [
@@ -129,7 +129,7 @@ class ParserWithCastersTest extends TestCase
     }
 
     /**
-     * Helper: преобразует результат парсера в массив с числовыми ключами
+     * Helper: converts parser result to array with numeric keys
      */
     private function parseToArray(Parser $parser, array $rows): array
     {
@@ -151,7 +151,7 @@ class ParserWithCastersTest extends TestCase
             ['Monitor', '5', '299.00', 'false', '4.8', '2023-04-05'],
         ];
 
-        // Вместо parseToArray, пройдемся по генератору
+        // Instead of parseToArray, iterate through the generator
         $results = [];
         foreach ($parser->parse($rows) as $index => $result) {
             $results[] = $result;
@@ -204,7 +204,7 @@ class ParserWithCastersTest extends TestCase
     {
         $parser = new Parser(PriceTestDTO::class, $this->validatorFactory);
 
-        // Test with different number formats (только те что работают с точкой как десятичным)
+        // Test with different number formats (only those that work with dot as decimal)
         $testCases = [
             '1,000.50' => 1000.5,
             '1 000.50' => 1000.5,

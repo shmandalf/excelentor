@@ -42,7 +42,7 @@ class BoolCaster implements CasterInterface
         }
 
         if ($value === null) {
-            return false; // null → false по умолчанию
+            return false; // null → false by default
         }
 
         if (is_int($value) || is_float($value)) {
@@ -53,7 +53,7 @@ class BoolCaster implements CasterInterface
             return $this->castString($value);
         }
 
-        // Для объектов и массивов - пробуем через строку
+        // For objects and arrays - trying string cast
         try {
             $stringValue = (new StringCaster())->cast($value);
             return $this->castString($stringValue);
@@ -77,31 +77,31 @@ class BoolCaster implements CasterInterface
         $value = trim($value);
         $lowerValue = strtolower($value);
 
-        // Проверяем кастомные true значения
+        // Checking custom true values
         foreach ($this->trueValues as $trueValue) {
             if (strtolower($trueValue) === $lowerValue) {
                 return true;
             }
         }
 
-        // Проверяем кастомные false значения
+        // Checking custom false values
         foreach ($this->falseValues as $falseValue) {
             if (strtolower($falseValue) === $lowerValue) {
                 return false;
             }
         }
 
-        // Если строка пустая после трима
+        // If a line is empty after trim, return
         if ($value === '') {
             return false;
         }
 
-        // Пробуем как число
+        // Trying cast to number
         if (is_numeric($value)) {
             return $this->castNumeric((float) $value);
         }
 
-        // Неизвестное значение
+        // Unknown value
         if ($this->strict) {
             throw new InvalidArgumentException(
                 sprintf(
@@ -115,7 +115,7 @@ class BoolCaster implements CasterInterface
             );
         }
 
-        // В нестрогом режиме: любая непустая строка → true
+        // In non-strict mode any non-empty string → true
         return true;
     }
 }

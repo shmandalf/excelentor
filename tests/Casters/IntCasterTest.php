@@ -63,7 +63,7 @@ class IntCasterTest extends TestCase
     public function testThrowsOnNonNumericString(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        // Теперь сообщение будет 'String value "not a number" is not numeric'
+        // The message will be 'String value "not a number" is not numeric'
         $this->expectExceptionMessage('is not numeric');
 
         $this->caster->cast('not a number');
@@ -82,7 +82,7 @@ class IntCasterTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('integer overflow');
 
-        // PHP_INT_MAX + 1 как строка
+        // PHP_INT_MAX + 1 as string
         $hugeNumber = (string) (PHP_INT_MAX) . '0';
         $this->caster->cast($hugeNumber);
     }
@@ -129,7 +129,7 @@ class IntCasterTest extends TestCase
 
     public function testConvertsViaStringCaster(): void
     {
-        // Объект с __toString()
+        // Object with __toString()
         $object = new class {
             public function __toString(): string
             {
