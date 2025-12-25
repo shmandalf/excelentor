@@ -6,47 +6,33 @@ namespace Shmandalf\Excelentor\Attributes;
 
 use Attribute;
 
+/**
+ * Defines column mapping for a DTO property
+ *
+ * This attribute can be used to:
+ * 1. Specify validation rules
+ * 2. Mark column as mandatory
+ * 3. Provide format hints (e.g., date format)
+ * 4. Explicitly specify caster alias from CasterConfig
+ */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Column
 {
     /**
-     * Validation rule
-     *
+     * @param string|null  $rule      - Laravel-style validation rule string
+     * @param string|null  $format    - Format hint for caster (e.g., date format)
+     * @param array        $messages  - Optional array with custom messages about validation errors
+     * @param boolean      $mandatory - Whether column must be present in the row to be processed
+     * @param string|null  $caster    - Caster alias from CasterConfig to use for this property
+     *                                  If null, caster will be resolved by property type
      */
-    private ?string $rule;
-
-    /**
-     * Custom messages about validation errors
-     *
-     */
-    private array $messages;
-
-    /**
-     * Column format
-     *
-     */
-    private ?string $format;
-
-    /**
-     * A row is treated not "empty" if all "mandatory" columns are present in the row
-     * Otherwise the row will be skipped
-     *
-     * @var boolean
-     */
-    private bool $mandatory;
-
-    /**
-     * @param string|null  $rule      - validation rule
-     * @param string       $format    - format (e.g. for parsing dates)
-     * @param array        $messages  - optional array with custom messages about validation errors
-     * @param boolean      $mandatory - if `true`, the value must not be empty for the row to be processed
-     */
-    public function __construct(?string $rule = null, ?string $format = null, array $messages = [], bool $mandatory = false)
-    {
-        $this->rule = $rule;
-        $this->format = $format;
-        $this->messages = $messages;
-        $this->mandatory = $mandatory;
+    public function __construct(
+        public ?string $rule = null,
+        public ?string $format = null,
+        public array $messages = [],
+        public bool $mandatory = false,
+        public ?string $caster = null
+    ) {
     }
 
     /**
