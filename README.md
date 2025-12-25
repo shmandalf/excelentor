@@ -49,7 +49,7 @@ $spreadsheetData = [
         'Name',
         'Here',
     ],
-    // Демонстрационные данные (в честь моих дочерей)
+    // Demo data
     [
         'Melissa',
         'daughter3@example.com',
@@ -290,10 +290,9 @@ Excelentor is built for speed:
 
 - Zero configuration overhead - annotations are cached
 - Generator-based parsing - memory efficient for large files
-- Early validation failure - stop on first error with `stopOnFirstFailure: true`
 
 ```php
-#[Header(columns: [...], stopOnFirstFailure: true)]
+#[Header(columns: [...])]
 class StrictImport {
     // Parsing stops at first validation error
 }

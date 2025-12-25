@@ -34,12 +34,6 @@ class Header
     private array $messages;
 
     /**
-     * Whether to stop execution on the first validation failure
-     *
-     */
-    private bool $stopOnFirstFailure;
-
-    /**
      * Constructor.
      *
      * The number of rows occupied by the header must be provided.
@@ -54,8 +48,7 @@ class Header
     public function __construct(
         array $columns,
         int $rows = 1,
-        array $messages = [],
-        bool $stopOnFirstFailure = false
+        array $messages = []
     ) {
         if (empty($columns)) {
             throw new ParserException('At least one column must be specified in the header');
@@ -64,7 +57,6 @@ class Header
         $this->columns = $columns;
         $this->rows = $rows;
         $this->messages = $messages;
-        $this->stopOnFirstFailure = $stopOnFirstFailure;
     }
 
     /**
@@ -124,11 +116,6 @@ class Header
     public function getMessages(): array
     {
         return $this->messages;
-    }
-
-    public function shouldStopOnFirstFailure(): bool
-    {
-        return $this->stopOnFirstFailure;
     }
 
     /**

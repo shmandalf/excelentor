@@ -30,7 +30,7 @@ class StringOnlyDebugTestDTO
     public string $name;
 }
 
-#[Header(columns: [0 => 'name', 1 => 'age'], rows: 1, stopOnFirstFailure: true)]
+#[Header(columns: [0 => 'name', 1 => 'age'], rows: 1)]
 class HeaderDebugTestDTO
 {
     #[Column]
@@ -50,14 +50,14 @@ class NullableDebugTestDTO
     public ?string $optional;
 }
 
-#[NoHeader(columns: [0 => 'email'], stopOnFirstFailure: true)]
+#[NoHeader(columns: [0 => 'email'])]
 class EmailDebugTestDTO
 {
     #[Column(rule: 'required|email')]
     public string $email;
 }
 
-#[NoHeader(columns: [0 => 'number'], stopOnFirstFailure: true)]
+#[NoHeader(columns: [0 => 'number'])]
 class IntDebugTestDTO
 {
     #[Column]
@@ -101,6 +101,7 @@ class ParserDebugTest extends TestCase
         $parser = new Parser(StringOnlyDebugTestDTO::class, $this->validatorFactory);
         $rows = [['John']];
 
+        /** @var array $results */
         $results = iterator_to_array($parser->parse($rows));
 
         $this->assertCount(1, $results);
@@ -115,20 +116,20 @@ class ParserDebugTest extends TestCase
     {
         $parser = new Parser(HeaderDebugTestDTO::class, $this->validatorFactory);
         $rows = [
-            ['Name', 'Age'],    // Row index 0 (header - skipped)
-            ['John', '30'],     // Row index 1
-            ['Jane', '25'],     // Row index 2
+            ['Name', 'Age'],    // header - skipped
+            ['John', '30'],     // Row index 0
+            ['Jane', '25'],     // Row index 1
         ];
 
-        $results = iterator_to_array($parser->parse($rows));
+        $results = $parser->parse($rows)->toArray();
 
         // Results have keys 1 and 2, not 0 and 1!
         $this->assertCount(2, $results);
-        $this->assertArrayHasKey(1, $results, 'Should have key 1 (first data row)');
-        $this->assertArrayHasKey(2, $results, 'Should have key 2 (second data row)');
+        $this->assertArrayHasKey(0, $results, 'Should have key 0 (first data row)');
+        $this->assertArrayHasKey(1, $results, 'Should have key 1 (second data row)');
 
-        $this->assertSame('John', $results[1]->name);
-        $this->assertSame('Jane', $results[2]->name);
+        $this->assertSame('John', $results[0]->name);
+        $this->assertSame('Jane', $results[1]->name);
     }
 
     /**
@@ -140,12 +141,12 @@ class ParserDebugTest extends TestCase
 
         // Test 1: with optional value
         $rows1 = [['John', 'value']];
-        $results1 = iterator_to_array($parser->parse($rows1));
+        $results1 = $parser->parse($rows1)->toArray();
         $this->assertSame('value', $results1[0]->optional);
 
         // Test 2: without optional value (empty string)
         $rows2 = [['Jane', '']];
-        $results2 = iterator_to_array($parser->parse($rows2));
+        $results2 = $parser->parse($rows2)->toArray();
         $this->assertNull($results2[0]->optional);
     }
 
@@ -158,7 +159,7 @@ class ParserDebugTest extends TestCase
 
         // Valid email
         $validRows = [['test@example.com']];
-        $results = iterator_to_array($parser->parse($validRows));
+        $results = $parser->parse($validRows)->toArray();
         $this->assertCount(1, $results);
         $this->assertSame('test@example.com', $results[0]->email);
 
@@ -167,13 +168,9 @@ class ParserDebugTest extends TestCase
 
         $exceptionThrown = false;
 
-        try {
-            iterator_to_array($parser->parse($invalidRows));
-        } catch (\Shmandalf\Excelentor\Exceptions\ValidationException $e) {
-            $exceptionThrown = true;
-        }
+        $results = iterator_to_array($parser->parse($invalidRows));
 
-        $this->assertTrue($exceptionThrown, 'Should throw ValidationException for invalid email');
+        $this->assertCount(0, $results, 'Should skip row with invalid email');
     }
 
     /**
@@ -188,13 +185,8 @@ class ParserDebugTest extends TestCase
 
         $exceptionThrown = false;
 
-        try {
-            iterator_to_array($parser->parse($rows));
-        } catch (\Shmandalf\Excelentor\Exceptions\ValidationException $e) {
-            $exceptionThrown = true;
-        } catch (\Throwable $e) {
-        }
+        $results = iterator_to_array($parser->parse($rows));
 
-        $this->assertTrue($exceptionThrown, 'Should throw exception for invalid int');
+        $this->assertCount(0, $results, 'Should skip row with invalid number');
     }
 }

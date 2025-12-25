@@ -125,18 +125,36 @@ class Parser implements ParserInterface
         return $exceptions;
     }
 
-    public function parse(iterable $rows): \Generator
+    /**
+     * Parse rows with statistics and error handling
+     *
+     * @param iterable $rows Input data
+     * @param callable|null $errorHandler Callback for error handling
+     */
+    public function parse(iterable $rows, ?callable $errorHandler = null): ParseResult
+    {
+        return new ParseResult(
+            processor: function () use ($rows) {
+                return $this->parseRows($rows);
+            },
+            errorHandler: $errorHandler
+        );
+    }
+
+    /**
+     * Internal method that yields either entities or ValidationException
+     * This replaces the old parse() method logic
+     */
+    private function parseRows(iterable $rows): \Generator
     {
         foreach ($this->filterRows($rows) as $rowIndex => $row) {
             try {
                 $validatedRow = $this->validateRow($row, $rowIndex);
                 yield $rowIndex => $this->parseValidatedRow($validatedRow, $rowIndex);
             } catch (ValidationException $e) {
-                if ($this->header->shouldStopOnFirstFailure()) {
-                    throw $e;
-                }
-                continue;
+                yield $e;
             } catch (CastException $e) {
+                // Convert CastException to ValidationException for consistency
                 $validationException = new ValidationException(
                     $e->getMessage(),
                     $e->getLineNo(),
@@ -146,16 +164,15 @@ class Parser implements ParserInterface
                         'actual_value' => $e->getActualValue(),
                     ]
                 );
-
-                if ($this->header->shouldStopOnFirstFailure()) {
-                    throw $validationException;
-                }
-                continue;
+                yield $validationException;
             } catch (\Throwable $e) {
-                if ($this->header->shouldStopOnFirstFailure()) {
-                    throw $e;
-                }
-                continue;
+                // Wrap any other exception
+                $validationException = new ValidationException(
+                    sprintf('Unexpected error: %s', $e->getMessage()),
+                    $rowIndex,
+                    ['original_exception' => $e->getMessage()]
+                );
+                yield $validationException;
             }
         }
     }

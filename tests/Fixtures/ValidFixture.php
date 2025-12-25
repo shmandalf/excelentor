@@ -18,8 +18,7 @@ use Shmandalf\Excelentor\Attributes\NoHeader;
     ],
     messages: [
         'required' => 'The required `:attribute` is missing',
-    ],
-    stopOnFirstFailure: true
+    ]
 )]
 class ValidFixture
 {
