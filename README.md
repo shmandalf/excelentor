@@ -5,7 +5,7 @@
 > This project is maintained for legacy purposes only. My engineering focus has shifted toward **High-Performance Asynchronous PHP** and system architecture.
 >
 > **Looking for speed? Check out my latest work:**
-> 🚀 **[FAST.Atomic.Flow](https://github.com/shmandalf/fast-atomic-flow)** — *Asynchronous PHP engine powered by Swoole.*
+> 🚀 **[FAST.Atomic.Flow](https://github.com/centaur-vova/fast-atomic-flow)** — *Asynchronous PHP engine powered by Swoole.*
 
 Excelentor is a **wizard-grade** PHP library that transforms mundane spreadsheets into elegant, strongly-typed PHP objects. Cast powerful spells (annotations) upon your DTOs and watch as Excel/CSV files magically hydrate into object collections.
 
